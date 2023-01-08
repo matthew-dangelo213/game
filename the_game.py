@@ -28,16 +28,16 @@ growth_time = 2500
 death_time = 5000
 seed_planted = False
 surface.fill("green")
-font = pygame.font.SysFont("Times Nuew Roman", 38)
+font = pygame.font.SysFont("Times New Roman", 38)
 collected_display = font.render(str(fruit_collected), 1, "black")
-cash_display = font.render(str(fruit_collected * fruit_price), 1, "black")
-pygame.draw.rect(surface, dirt_color, pygame.Rect(tx, ty, w - (tx * 2), h - (ty * 2)))
-pygame.draw.rect(surface, p_color, pygame.Rect(px, py, p_size, p_size))
+cash_display = font.render("$" + str(fruit_collected * fruit_price), 1, "black")
+plot_rect = pygame.Rect(tx, ty, w - (tx * 2), h - (ty * 2))
+pygame.draw.rect(surface, dirt_color, plot_rect)
+player_rect = pygame.Rect(px, py, p_size, p_size)
+pygame.draw.rect(surface, p_color, player_rect)
 surface.blit(collected_display, (20, 20))
-surface.blit(cash_display, (20, 50))
+surface.blit(cash_display, (50, 50))
 pygame.display.flip()
-
-
 
 while True:
 	for event in pygame.event.get():
@@ -45,32 +45,31 @@ while True:
 			sys.exit()
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_w:
-				py -= movement_speed
+				player_rect.move_ip(0, -movement_speed)
 			elif event.key == pygame.K_a:
-				px -= movement_speed
+				player_rect.move_ip(-movement_speed, 0)
 			elif event.key == pygame.K_s:
-				py += movement_speed
+				player_rect.move_ip(0, movement_speed)
 			elif event.key == pygame.K_d:
-				px += movement_speed				
+				player_rect.move_ip(movement_speed, 0)			
 			elif event.key == pygame.K_SPACE:	
-				if not seed_planted and px > tx and px < w - tx - p_size and py > ty and py < h - ty - p_size:
+				if not seed_planted and plot_rect.contains(player_rect):
 					seed_planted = True
 					grass_color = planted_color
 					time_planted = pygame.time.get_ticks()
-				elif seed_planted and px > tx and px < w - tx - p_size and py > ty and py < h - ty - p_size and grass_color != grown_color:
+				elif seed_planted and plot_rect.contains(player_rect) and grass_color != grown_color:
 					grass_color = dirt_color
 					seed_planted = False
 					time_planted = -1
-				elif seed_planted and px > tx and px < w - tx - p_size and py > ty and py < h - ty - p_size and grass_color == grown_color:
+				elif seed_planted and plot_rect.contains(player_rect) and grass_color == grown_color:
 					fruit_collected += 1
 					grass_color = dirt_color
 					seed_planted = False
 					time_planted = -1
 
-
 	current_time = pygame.time.get_ticks()
 
-	if px > tx and px < w - tx - p_size and py > ty and py < h - ty - p_size:
+	if plot_rect.contains(player_rect):
 		p_color = (255, 255, 255)
 	else:
 		p_color = (255, 0, 0)	
@@ -82,12 +81,10 @@ while True:
 
 	surface.fill("green")
 	pygame.draw.rect(surface, grass_color, pygame.Rect(tx, ty, w - (tx * 2), h - (ty * 2)))
-	pygame.draw.rect(surface, p_color, pygame.Rect(px, py, p_size, p_size))
+	pygame.draw.rect(surface, p_color, player_rect)
 	collected_display = font.render(str(fruit_collected), 1, "black")
 	cash_display = font.render(str(fruit_collected * fruit_price), 1, "black")
 	surface.blit(collected_display, (5, 20))
 	surface.blit(cash_display, (5, 50))
-	print(fruit_collected)
-	# print(f"current time: {current_time} button press time: {time_planted}")
 	pygame.display.flip()
 	clock.tick(60)
