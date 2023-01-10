@@ -62,10 +62,10 @@ surface.blit(cash_display, (5, 50))
 surface.blit(fruit_display, (5, 80))
 pygame.display.flip()
 
-def lighten(color, scale):
-	r = color[0] * scale
-	g = color[1] * scale
-	b = color[2] * scale
+def lighten(color):
+	r = color[0] + 70
+	g = color[1] + 70
+	b = color[2] + 70
 	if r > 255:
 		r = 255
 	if g > 255:
@@ -94,7 +94,7 @@ while True:
 			elif event.key == pygame.K_SPACE:	
 				if not seed_planted_tl and (topleft_rect.contains(player_rect)):
 					seed_planted_tl = True
-					grass_color_tl = lighten(seeds[current_seed], 3.5)
+					grass_color_tl = lighten(seeds[current_seed])
 					grown_color_tl = seeds[current_seed]
 					time_planted_tl = pygame.time.get_ticks()
 				elif seed_planted_tl and (topleft_rect.contains(player_rect)) and grass_color_tl != grown_color_tl:
@@ -109,7 +109,7 @@ while True:
 
 				if not seed_planted_tr and (topright_rect.contains(player_rect)):
 					seed_planted_tr = True
-					grass_color_tr = lighten(seeds[current_seed], 3.5)
+					grass_color_tr = lighten(seeds[current_seed])
 					grown_color_tr = seeds[current_seed]
 					time_planted_tr = pygame.time.get_ticks()
 				elif seed_planted_tr and (topright_rect.contains(player_rect)) and grass_color_tr != grown_color_tr:
@@ -124,7 +124,7 @@ while True:
 
 				if not seed_planted_bl and (botleft_rect.contains(player_rect)):
 					seed_planted_bl = True
-					grass_color_bl = lighten(seeds[current_seed], 3.5)
+					grass_color_bl = lighten(seeds[current_seed])
 					grown_color_bl = seeds[current_seed]
 					time_planted_bl = pygame.time.get_ticks()
 				elif seed_planted_bl and (botleft_rect.contains(player_rect)) and grass_color_bl != grown_color_bl:
@@ -139,7 +139,7 @@ while True:
 
 				if not seed_planted_br and (botright_rect.contains(player_rect)):
 					seed_planted_br = True
-					grass_color_br = lighten(seeds[current_seed], 3.5)
+					grass_color_br = lighten(seeds[current_seed])
 					grown_color_br = seeds[current_seed]
 					time_planted_br = pygame.time.get_ticks()
 				elif seed_planted_br and (botright_rect.contains(player_rect)) and grass_color_br != grown_color_br:
