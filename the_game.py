@@ -9,9 +9,9 @@ h = 240 * 2
 surface = pygame.display.set_mode((w, h))
 p_color = (128, 0, 128)
 dirt_color = (111, 78, 55)
-seeds = {"tomato": {"color": (255, 20, 0), "price": 50, "exp": 1, "grow_time": 2700}, "blueberry": {"color": (50, 0, 255), "price": 300, "exp": 2, "grow_time": 10000}, "pumpkin": {"color": (255, 117, 24), "price": 1000, "exp": 4, "grow_time": 20000}}
-current_seed = "tomato"
-seed_options = ["tomato", "blueberry", "pumpkin"]
+seeds = {"Tomato": {"color": (255, 20, 0), "price": 50, "exp": 1, "grow_time": 2500}, "Blueberry": {"color": (50, 0, 255), "price": 300, "exp": 2, "grow_time": 4000}, "Pumpkin": {"color": (255, 117, 24), "price": 1000, "exp": 5, "grow_time": 9000}}
+current_seed = "Tomato"
+seed_options = ["Tomato", "Blueberry", "Pumpkin"]
 seed_options_index = seed_options.index(current_seed)
 grown_color_tl = seeds[current_seed]["color"]
 grown_color_tr = seeds[current_seed]["color"]
@@ -33,20 +33,24 @@ time_planted_bl = 0
 time_planted_br = 0
 fruit_collected = 0
 clock = pygame.time.Clock()
-tx = 30
-ty = 30
+tx = 1
+ty = 1
 p_size = 30
 px = 320 - (p_size / 2)
 py = 240 - (p_size / 2)
 movement_speed = 100
 death_time = 100000
-earned_total = 0 
+earned_total = 0
+p_level = 0
+exp_total = 0
 seed_planted_tl = None
 seed_planted_tr = None
 seed_planted_bl = None
 seed_planted_br = None
 surface.fill("green")
 font = pygame.font.SysFont("Times New Roman", 38)
+lvl_display = font.render("Lvl: " + str(p_level), 1, "black")
+exp_display = font.render("Exp: " + str(exp_total), 1, "black")
 cash_display = font.render("$" + str(earned_total), 1, "black")
 fruit_display = font.render(current_seed, 1, "black")
 topleft_rect = pygame.Rect(tx, ty, (w / 2) - (tx * 2), (h / 2) - (ty * 2))
@@ -59,6 +63,8 @@ pygame.draw.rect(surface, dirt_color, botleft_rect)
 pygame.draw.rect(surface, dirt_color, botright_rect)
 player_rect = pygame.Rect(px, py, p_size, p_size)
 pygame.draw.rect(surface, p_color, player_rect)
+surface.blit(lvl_display, (5, 1))
+surface.blit(exp_display, (5, 20))
 surface.blit(cash_display, (5, 50))
 surface.blit(fruit_display, (5, 80))
 pygame.display.flip()
@@ -106,6 +112,7 @@ while True:
 				elif seed_planted_tl and (topleft_rect.contains(player_rect)) and grass_color_tl == grown_color_tl:
 					fruit_collected += 1
 					earned_total += seeds[seed_planted_tl]["price"]
+					exp_total += seeds[seed_planted_tl]["exp"]
 					grass_color_tl = dirt_color
 					seed_planted_tl = None
 					time_planted_tl = -1
@@ -123,6 +130,7 @@ while True:
 				elif seed_planted_tr and (topright_rect.contains(player_rect)) and grass_color_tr == grown_color_tr:
 					fruit_collected += 1
 					earned_total += seeds[seed_planted_tr]["price"]
+					exp_total += seeds[seed_planted_tr]["exp"]
 					grass_color_tr = dirt_color
 					seed_planted_tr = None
 					time_planted_tr = -1
@@ -140,6 +148,7 @@ while True:
 				elif seed_planted_bl and (botleft_rect.contains(player_rect)) and grass_color_bl == grown_color_bl:
 					fruit_collected += 1
 					earned_total += seeds[seed_planted_bl]["price"]
+					exp_total += seeds[seed_planted_bl]["exp"]
 					grass_color_bl = dirt_color
 					seed_planted_bl = None
 					time_planted_bl = -1											
@@ -157,6 +166,7 @@ while True:
 				elif seed_planted_br and (botright_rect.contains(player_rect)) and grass_color_br == grown_color_br:
 					fruit_collected += 1
 					earned_total += seeds[seed_planted_br]["price"]
+					exp_total += seeds[seed_planted_br]["exp"]
 					grass_color_br = dirt_color
 					seed_planted_br = None
 					time_planted_br = -1	
@@ -183,15 +193,25 @@ while True:
 	if seed_planted_br and current_time - time_planted_br > death_time + growth_time_br:
 		grass_color_br = dead_color
 
+	if exp_total >= 20:
+		p_level = 2
+
+	if exp_total >= 50:
+		p_level = 3
+
 	surface.fill("green")
 	pygame.draw.rect(surface, grass_color_tl, topleft_rect)
 	pygame.draw.rect(surface, grass_color_tr, topright_rect)
 	pygame.draw.rect(surface, grass_color_bl, botleft_rect)
 	pygame.draw.rect(surface, grass_color_br, botright_rect)
 	pygame.draw.rect(surface, p_color, player_rect)
-	cash_display = font.render(str(earned_total), 1, "black")
+	lvl_display = font.render("Lvl: " + str(p_level), 1, "black")
+	exp_display = font.render("Exp: " + str(exp_total), 1, "black")
+	cash_display = font.render("$" + str(earned_total), 1, "black")
 	fruit_display = font.render(current_seed, 1, "black")
-	surface.blit(cash_display, (5, 50))
-	surface.blit(fruit_display, (5, 80))
+	surface.blit(lvl_display, (5, 1))
+	surface.blit(exp_display, (5, 35))
+	surface.blit(cash_display, (5, 67))
+	surface.blit(fruit_display, (5, 100))
 	pygame.display.flip()
 	clock.tick(60)
