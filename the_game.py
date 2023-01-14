@@ -98,6 +98,10 @@ while True:
 				seed_options_index += 1
 				seed_options_index %= len(seed_options)
 				current_seed = seed_options[seed_options_index]
+			elif event.key == pygame.K_q:
+				seed_options_index -= 1
+				seed_options_index %= len(seed_options)
+				current_seed = seed_options[seed_options_index]
 			elif event.key == pygame.K_SPACE:	
 				if not seed_planted_tl and (topleft_rect.contains(player_rect)):
 					seed_planted_tl = current_seed
