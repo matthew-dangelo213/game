@@ -2,9 +2,9 @@ import sys
 
 import pygame
 
-TILE_WIDTH = 320
-TILE_HEIGHT = 240
-N = 2
+TILE_WIDTH = 320/2
+TILE_HEIGHT = 240/2
+N = 5
 W = TILE_WIDTH * N
 H = TILE_HEIGHT * N
 BUFF = 1
@@ -99,9 +99,10 @@ p_size = 30
 px = 320 - (p_size / 2)
 py = 240 - (p_size / 2)
 movement_speed = 50
-death_time = 100000
+death_time = 1000
 earned_total = 0
 p_level = 0
+menu_index = 0
 exp_total = 0
 in_menu = False
 surface.fill("green")
@@ -125,6 +126,7 @@ pygame.display.flip()
 
 
 while True:
+	num_unlocked_seeds = sum(seed["lvl"] <= p_level for seed in SEEDS.values())
 	if in_menu:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -132,25 +134,28 @@ while True:
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_f:
 					in_menu = False
-
-
+				if event.key == pygame.K_w:
+					menu_index -= 1
+					menu_index %= num_unlocked_seeds
+				if event.key == pygame.K_s:
+					menu_index += 1
+					menu_index %= num_unlocked_seeds
 
 		pygame.draw.rect(surface, (0, 0, 0), menu_rect)
 		list_y = 32
-		unlocked_text_color = "white"
-		for seed in SEEDS:
-			if SEEDS[seed]["lvl"] > p_level:
-				unlocked_text_color = "grey"
-			seed_list_display = font.render(seed, 1, unlocked_text_color)
+
+		for index, seed in enumerate(SEEDS):
+			text_color = "white"
+			if index == menu_index:
+				text_color = "blue"
+			elif SEEDS[seed]["lvl"] > p_level:
+				text_color = "grey"
+			seed_list_display = font.render(seed, 1, text_color)
 			surface.blit(seed_list_display, (37, list_y))
 			list_y += 50
 
-		pygame.display.flip()
-		clock.tick(60)
 
-
-
-	if in_menu == False:
+	else:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
 				sys.exit()
@@ -165,11 +170,11 @@ while True:
 					player_rect.move_ip(movement_speed, 0)
 				elif event.key == pygame.K_e:
 					seed_options_index += 1
-					seed_options_index %= len(seed_options)
+					seed_options_index %= num_unlocked_seeds
 					current_seed = seed_options[seed_options_index]
 				elif event.key == pygame.K_q:
 					seed_options_index -= 1
-					seed_options_index %= len(seed_options)
+					seed_options_index %= num_unlocked_seeds
 					current_seed = seed_options[seed_options_index]
 				elif event.key == pygame.K_f:
 					in_menu = True
@@ -179,6 +184,9 @@ while True:
 						if not tile["seed"] and (tile["rect"].contains(player_rect)):
 							tile["seed"] = current_seed
 							tile["time_planted"] = pygame.time.get_ticks()
+						elif tile["seed"] == "dead":
+							tile["seed"] = None
+							tile["time_planted"] = None
 						elif tile["seed"] and (tile["rect"].contains(player_rect)) and not is_ready(tile, current_time):
 							tile["seed"] = None
 							tile["time_planted"] = None
@@ -192,6 +200,8 @@ while True:
 		current_time = pygame.time.get_ticks()
 
 		for tile in tiles:
+			if tile["seed"] == "dead":
+				continue
 			if tile["seed"] and current_time - tile["time_planted"] > death_time + SEEDS[tile["seed"]]["grow_time"]:
 				tile["seed"] = "dead"
 		if exp_total >= 20:
@@ -211,7 +221,6 @@ while True:
 		surface.blit(exp_display, (5, 35))
 		surface.blit(cash_display, (5, 67))
 		surface.blit(fruit_display, (5, 100))
-		pygame.display.flip()
-		clock.tick(60)
+
 	pygame.display.flip()
 	clock.tick(60)
