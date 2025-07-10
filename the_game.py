@@ -1,16 +1,20 @@
 import sys
-
+import os
 import pygame
 
-TILE_WIDTH = 320/2
-TILE_HEIGHT = 240/2
-N = 6
+TILE_WIDTH = 320
+TILE_HEIGHT = 240
+N = 2
 W = TILE_WIDTH * N
 H = TILE_HEIGHT * N
-BUFF = 1
+BUFF = 4
 DIRT_COLOR = (111, 78, 55)
 DEAD_COLOR = (0, 0, 0)
 PLAYER_COLOR = (128, 0, 128)
+INITIAL_LEVEL = 0
+INITIAL_EXP = 0
+INITIAL_CASH = 40
+INITIAL_SEED_COUNT = 0
 SEEDS = {
 	"Tomato": {
 		"color": (255, 20, 0),
@@ -88,16 +92,32 @@ def create_tile(i, j):
 		"time_planted": None
 	}
 
+def save(save_stuff):
+	savefile = open("savefile", "w")
+	for item in save_stuff:
+		savefile.write(str(save_stuff[item]) + "\n")
+
+def load():
+	if os.path.exists("savefile"):
+		savefile = open("savefile")
+		lines = savefile.readlines()
+		p_level = int(lines[0])
+		exp_total = int(lines[1])
+		earned_total = int(lines[2])
+		tomato_count = int(lines[3])
+		return (p_level, exp_total, earned_total, tomato_count)
+	return (INITIAL_LEVEL, INITIAL_EXP, INITIAL_CASH, INITIAL_SEED_COUNT)
+
+
 
 pygame.init()
-
+# exit()
 surface = pygame.display.set_mode((W, H))
 tiles = [create_tile(i, j) for i in range(N) for j in range(N)]
-
 current_seed = "Tomato"
 seed_options = ["Tomato", "Blueberry", "Pumpkin", "Onion", "Corn"]
 seed_options_index = seed_options.index(current_seed)
-
+# savefile = open("savefile", "w")
 current_time = 0
 fruit_collected = 0
 p_size = 30
@@ -105,11 +125,12 @@ px = 320 - (p_size / 2)
 py = 240 - (p_size / 2)
 movement_speed = 50
 death_time = 1000000
-earned_total = 40
-p_level = 0
 menu_index = 0
 seed_cost = 0
-exp_total = 0
+
+p_level, exp_total, earned_total, SEEDS["Tomato"]["count"] = load()
+
+
 in_menu = False
 surface.fill("green")
 font = pygame.font.SysFont("Times New Roman", 38)
@@ -117,6 +138,7 @@ lvl_display = font.render("Lvl: " + str(p_level), 1, "grey")
 exp_display = font.render("Exp: " + str(exp_total), 1, "grey")
 cash_display = font.render("$" + str(earned_total), 1, "grey")
 fruit_display = font.render(current_seed, 1, "grey")
+seed_count_display = font.render(str(SEEDS[current_seed]["count"]), 1, "grey")
 clock = pygame.time.Clock()
 current_time = pygame.time.get_ticks()
 player_rect = pygame.Rect(px, py, p_size, p_size)
@@ -131,15 +153,12 @@ surface.blit(cash_display, (5, 50))
 surface.blit(fruit_display, (5, 80))
 pygame.display.flip()
 
-
 while True:
-
-
-
 	num_unlocked_seeds = sum(seed["lvl"] <= p_level for seed in SEEDS.values())
 	if in_menu:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+				save(save_stuff)
 				sys.exit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_f:
@@ -152,11 +171,9 @@ while True:
 					menu_index %= num_unlocked_seeds
 				if event.key == pygame.K_SPACE:
 					seed_cost = SEEDS[seed_options[menu_index]]["cost"]
-
 					if earned_total >= seed_cost:
 						earned_total -= seed_cost
 						SEEDS[seed_options[menu_index]]["count"] += 1
-
 
 		surface.fill("green")
 		for tile in tiles:
@@ -171,8 +188,6 @@ while True:
 		surface.blit(cash_display, (5, 67))
 		surface.blit(fruit_display, (5, 100))
 		surface.blit(seed_count_display, (170, 100))
-
-
 		pygame.draw.rect(surface, (0, 0, 0), menu_rect)
 		list_y = 32
 		for index, seed in enumerate(seed_options):
@@ -187,21 +202,10 @@ while True:
 			surface.blit(seed_count_display, (347, list_y))
 			list_y += 50
 
-
-
-
-
-
-
-
-
-
-
-
-
 	else:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+				save(save_stuff)
 				sys.exit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_w:
@@ -222,7 +226,6 @@ while True:
 					current_seed = seed_options[seed_options_index]
 				elif event.key == pygame.K_f:
 					in_menu = True
-
 				elif event.key == pygame.K_SPACE:
 					for tile in tiles:
 						if not tile["seed"] and (tile["rect"].contains(player_rect)) and SEEDS[current_seed]["count"] > 0:
@@ -281,5 +284,7 @@ while True:
 	# if earned_total < SEEDS["Tomato"]["cost"] and last_stand:
 	# 	earned_total = 10
 
+	# savefile.write(str(earned_total))
+	save_stuff = {"p_level": p_level, "exp_total": exp_total, "earned_total": earned_total, "tomato_count": SEEDS["Tomato"]["count"]}
 	pygame.display.flip()
 	clock.tick(60)
